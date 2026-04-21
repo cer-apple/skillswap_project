@@ -1,0 +1,166 @@
+{% extends 'MainApp/base.html' %}
+
+{% block title %}Dashboard - Campus SkillSwap{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="container">
+        <h1>Your Dashboard</h1>
+        <p class="lead">Manage your skills and track your activity</p>
+    </div>
+</div>
+
+<div class="container my-5">
+    <!-- Welcome Section -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="alert alert-light border" style="background-color: #f8f9fa;">
+                <h5>Welcome back, {{ user.get_full_name|default:user.username }}! 👋</h5>
+                <p class="mb-0">
+                    You have <strong>{{ total_skills }}</strong> skill{{ total_skills|pluralize }} posted 
+                    with <strong>{{ available_skills }}</strong> currently available.
+                </p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Stat cards -->
+    <div class="row g-3 mb-5">
+        <div class="col-md-4">
+            <div class="card text-center h-100">
+                <div class="card-body">
+                    <h6 class="text-muted mb-2">Total Skills</h6>
+                    <h3 class="display-5 mb-0 text-primary">{{ total_skills }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-center h-100">
+                <div class="card-body">
+                    <h6 class="text-muted mb-2">Available Now</h6>
+                    <h3 class="display-5 mb-0 text-success">{{ available_skills }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-center h-100">
+                <div class="card-body">
+                    <h6 class="text-muted mb-2">Profile Status</h6>
+                    <h3 class="display-6 mb-0 text-warning">Complete</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="d-flex flex-wrap gap-2 mb-5">
+        <a href="{% url 'MainApp:create_skill' %}" class="btn btn-primary btn-lg">
+            <i class="bi bi-plus-lg"></i> Post a New Skill
+        </a>
+        <a href="{% url 'MainApp:profile' %}" class="btn btn-outline-secondary btn-lg">
+            <i class="bi bi-person-gear"></i> Edit Profile
+        </a>
+        <a href="{% url 'MainApp:home' %}" class="btn btn-outline-primary btn-lg">
+            <i class="bi bi-grid"></i> Browse Skills
+        </a>
+    </div>
+    
+    <!-- Your Skills Section -->
+    <h2 class="mb-4">Your Posted Skills</h2>
+    
+    {% if skills %}
+        <div class="row g-4">
+            {% for skill in skills %}
+                <div class="col-md-6 col-lg-4">
+                    <div class="card skill-card h-100">
+                        <div class="card-body">
+                            <!-- Skill Header -->
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <div>
+                                    <h5 class="card-title">{{ skill.title }}</h5>
+                                </div>
+                                <span class="badge bg-{{ skill.availability_status|default:'secondary' }}">
+                                    {{ skill.get_availability_status_display }}
+                                </span>
+                            </div>
+                            
+                            <!-- Category -->
+                            <div class="mb-2">
+                                <span class="badge bg-info">{{ skill.get_category_display }}</span>
+                            </div>
+                            
+                            <!-- Description -->
+                            <p class="card-text text-muted">
+                                {{ skill.description|truncatewords:15 }}
+                            </p>
+                            
+                            <!-- Price -->
+                            <div class="mb-3">
+                                {% if skill.price_type == 'free' %}
+                                    <span class="badge bg-success">Free</span>
+                                {% elif skill.price_type == 'paid' %}
+                                    <span class="badge bg-warning">${{ skill.price }}</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">Negotiable</span>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- Posted Date -->
+                            <small class="text-muted d-block mb-3">
+                                Posted {{ skill.created_at|date:"M d, Y" }}
+                            </small>
+                            
+                            <!-- Action Buttons -->
+                            <div class="btn-group w-100" role="group">
+                                <a href="{% url 'MainApp:skill_detail' skill.pk %}" class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-eye"></i> View
+                                </a>
+                                <a href="{% url 'MainApp:update_skill' skill.pk %}" class="btn btn-sm btn-outline-warning">
+                                    <i class="bi bi-pencil"></i> Edit
+                                </a>
+                                <a href="{% url 'MainApp:delete_skill' skill.pk %}" class="btn btn-sm btn-outline-danger">
+                                    <i class="bi bi-trash"></i> Delete
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    
+    {% else %}
+        <!-- No Skills Message -->
+        <div class="alert alert-info" role="alert">
+            <h4 class="alert-heading">You haven't posted any skills yet! 🎯</h4>
+            <p>
+                Start sharing your talents with the campus community. 
+                It's easy and fun!
+            </p>
+            <hr>
+            <p class="mb-0">
+                <a href="{% url 'MainApp:create_skill' %}" class="btn btn-primary">
+                    Post Your First Skill
+                </a>
+            </p>
+        </div>
+    {% endif %}
+    
+    <!-- Quick Tips -->
+    <div class="row mt-5">
+        <div class="col-md-12">
+            <div class="card" style="background-color: #fff3cd; border-color: #ffc107;">
+                <div class="card-body">
+                    <h6 class="card-title text-dark">💡 Tips to Get More Interested Students</h6>
+                    <ul class="mb-0 text-dark">
+                        <li>Keep your skill descriptions clear and detailed</li>
+                        <li>Update your availability status regularly</li>
+                        <li>Provide reasonable pricing (free or low cost attracts more interest)</li>
+                        <li>Choose an easy contact method (email or WhatsApp recommended)</li>
+                        <li>Be responsive to inquiries from interested students</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

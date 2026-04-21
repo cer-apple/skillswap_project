@@ -1,0 +1,186 @@
+{% extends 'MainApp/base.html' %}
+
+{% block title %}{{ title }} - Campus SkillSwap{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="container">
+        <h1>{{ title }}</h1>
+        <p class="lead">Share what you know with the campus community</p>
+    </div>
+</div>
+
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-body p-5">
+                    <!-- Form -->
+                    <form method="POST" novalidate>
+                        {% csrf_token %}
+                        
+                        <!-- Title Field -->
+                        <div class="mb-4">
+                            <label for="{{ form.title.id_for_label }}" class="form-label">
+                                <strong>Skill Title</strong>
+                                <span class="text-danger">*</span>
+                            </label>
+                            {{ form.title }}
+                            {% if form.title.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.title.errors }}
+                                </div>
+                            {% endif %}
+                            <small class="form-text text-muted">
+                                Give your skill a catchy name (e.g., "Python Programming Tutoring")
+                            </small>
+                        </div>
+                        
+                        <!-- Description Field -->
+                        <div class="mb-4">
+                            <label for="{{ form.description.id_for_label }}" class="form-label">
+                                <strong>Description</strong>
+                                <span class="text-danger">*</span>
+                            </label>
+                            {{ form.description }}
+                            {% if form.description.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.description.errors }}
+                                </div>
+                            {% endif %}
+                            <small class="form-text text-muted">
+                                Describe what you'll teach/help with, your experience level, and what students can expect.
+                            </small>
+                        </div>
+                        
+                        <!-- Category Field -->
+                        <div class="mb-4">
+                            <label for="{{ form.category.id_for_label }}" class="form-label">
+                                <strong>Category</strong>
+                                <span class="text-danger">*</span>
+                            </label>
+                            {{ form.category }}
+                            {% if form.category.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.category.errors }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Price Type Field -->
+                        <div class="mb-4">
+                            <label for="{{ form.price_type.id_for_label }}" class="form-label">
+                                <strong>Price Type</strong>
+                                <span class="text-danger">*</span>
+                            </label>
+                            {{ form.price_type }}
+                            {% if form.price_type.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.price_type.errors }}
+                                </div>
+                            {% endif %}
+                            <small class="form-text text-muted">
+                                Is your skill free or paid?
+                            </small>
+                        </div>
+                        
+                        <!-- Price Field -->
+                        <div class="mb-4">
+                            <label for="{{ form.price.id_for_label }}" class="form-label">
+                                <strong>Price ($)</strong>
+                            </label>
+                            {{ form.price }}
+                            {% if form.price.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.price.errors }}
+                                </div>
+                            {% endif %}
+                            <small class="form-text text-muted">
+                                Leave blank for free or negotiable skills. Enter the price per session.
+                            </small>
+                        </div>
+                        
+                        <!-- Contact Preference Field -->
+                        <div class="mb-4">
+                            <label for="{{ form.contact_preference.id_for_label }}" class="form-label">
+                                <strong>Preferred Contact Method</strong>
+                                <span class="text-danger">*</span>
+                            </label>
+                            {{ form.contact_preference }}
+                            {% if form.contact_preference.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.contact_preference.errors }}
+                                </div>
+                            {% endif %}
+                            <small class="form-text text-muted">
+                                How should interested students contact you?
+                            </small>
+                        </div>
+                        
+                        <!-- Availability Status Field -->
+                        <div class="mb-4">
+                            <label for="{{ form.availability_status.id_for_label }}" class="form-label">
+                                <strong>Availability Status</strong>
+                                <span class="text-danger">*</span>
+                            </label>
+                            {{ form.availability_status }}
+                            {% if form.availability_status.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.availability_status.errors }}
+                                </div>
+                            {% endif %}
+                            <small class="form-text text-muted">
+                                Are you currently available to teach/help?
+                            </small>
+                        </div>
+                        
+                        <!-- Non-field errors -->
+                        {% if form.non_field_errors %}
+                            <div class="alert alert-danger" role="alert">
+                                <strong>Error:</strong>
+                                {{ form.non_field_errors }}
+                            </div>
+                        {% endif %}
+                        
+                        <!-- Form Actions -->
+                        <div class="d-grid gap-2 d-sm-flex gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                {% if form.instance.pk %}
+                                    💾 Update Skill
+                                {% else %}
+                                    ✨ Post Skill
+                                {% endif %}
+                            </button>
+                            
+                            {% if form.instance.pk %}
+                                <a href="{% url 'MainApp:skill_detail' form.instance.pk %}" class="btn btn-secondary btn-lg">
+                                    Cancel
+                                </a>
+                            {% else %}
+                                <a href="{% url 'MainApp:dashboard' %}" class="btn btn-secondary btn-lg">
+                                    Cancel
+                                </a>
+                            {% endif %}
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Help Tips -->
+            <div class="card mt-4" style="background-color: #f0f7ff;">
+                <div class="card-body">
+                    <h6 class="card-title">💡 Tips for a Great Skill Post</h6>
+                    <ul class="mb-0">
+                        <li>Use a clear, descriptive title that helps people find you</li>
+                        <li>Provide details about what you can teach/help with</li>
+                        <li>Mention any qualifications or experience you have</li>
+                        <li>Be honest about your pricing</li>
+                        <li>Choose an easy contact method for interested students</li>
+                        <li>Update your availability status regularly</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

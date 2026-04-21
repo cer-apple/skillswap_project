@@ -1,0 +1,51 @@
+{% extends 'MainApp/base.html' %}
+
+{% block title %}Delete Skill - Campus SkillSwap{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card border-danger">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0">⚠️ Delete Skill</h5>
+                </div>
+                <div class="card-body">
+                    <h5 class="card-title">Are you sure?</h5>
+                    
+                    <p class="card-text">
+                        You are about to permanently delete:
+                    </p>
+                    
+                    <div class="alert alert-light border">
+                        <h6 class="mb-1">{{ skill.title }}</h6>
+                        <small class="text-muted">{{ skill.description|truncatewords:20 }}</small>
+                    </div>
+                    
+                    <p class="text-danger">
+                        <strong>This action cannot be undone!</strong>
+                    </p>
+                    
+                    <p class="text-muted">
+                        Once deleted, your skill post will be removed from the marketplace and interested students won't be able to find it.
+                    </p>
+                    
+                    <!-- Confirmation Form -->
+                    <form method="POST">
+                        {% csrf_token %}
+                        
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-danger btn-lg">
+                                Yes, Delete This Skill
+                            </button>
+                            <a href="{% url 'MainApp:skill_detail' skill.pk %}" class="btn btn-secondary btn-lg">
+                                Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,72 @@
+{% extends 'MainApp/base.html' %}
+
+{% block title %}Login - Campus SkillSwap{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body p-5">
+                    <h3 class="card-title text-center mb-4">Welcome Back! 👋</h3>
+                    
+                    <form method="POST" novalidate>
+                        {% csrf_token %}
+                        
+                        <!-- Username Field -->
+                        <div class="mb-3">
+                            <label for="id_username" class="form-label">
+                                <strong>Username</strong>
+                            </label>
+                            <input 
+                                type="text" 
+                                name="username" 
+                                class="form-control" 
+                                placeholder="Enter your username"
+                                required
+                            >
+                        </div>
+                        
+                        <!-- Password Field -->
+                        <div class="mb-4">
+                            <label for="id_password" class="form-label">
+                                <strong>Password</strong>
+                            </label>
+                            <input 
+                                type="password" 
+                                name="password" 
+                                class="form-control" 
+                                placeholder="Enter your password"
+                                required
+                            >
+                        </div>
+                        
+                        <!-- Submit Button -->
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                🔓 Login
+                            </button>
+                        </div>
+                    </form>
+                    
+                    <hr class="my-4">
+                    
+                    <!-- Sign Up Link -->
+                    <p class="text-center mb-0">
+                        Don't have an account? 
+                        <a href="{% url 'MainApp:register' %}">Sign up here</a>
+                    </p>
+                </div>
+            </div>
+            
+            <!-- Info Card -->
+            <div class="card mt-4" style="background-color: #f0f7ff;">
+                <div class="card-body">
+                    <h6 class="card-title">Welcome to Campus SkillSwap</h6>
+                    <p class="mb-0">Login to access your dashboard, post skills, and connect with other students!</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

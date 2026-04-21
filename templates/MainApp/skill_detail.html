@@ -1,0 +1,274 @@
+{% extends 'MainApp/base.html' %}
+
+{% block title %}{{ skill.title }} - Campus SkillSwap{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row">
+        <!-- Skill Details -->
+        <div class="col-md-8">
+            <div class="card skill-card mb-4">
+                <div class="card-body">
+                    <!-- Header -->
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div>
+                            <h1 class="card-title">{{ skill.title }}</h1>
+                            <small class="text-muted">Posted {{ skill.created_at|date:"F j, Y" }}</small>
+                        </div>
+                        
+                        <!-- Status Badge -->
+                        <span class="badge bg-{{ skill.availability_status|default:'secondary' }}">
+                            {{ skill.get_availability_status_display }}
+                        </span>
+                    </div>
+                    
+                    <!-- Category and Stats -->
+                    <div class="mb-3">
+                        <span class="badge bg-info">{{ skill.get_category_display }}</span>
+                        <span class="badge bg-light text-dark">
+                            <i class="bi bi-calendar-event"></i> Updated {{ skill.updated_at|date:"M d, Y" }}
+                        </span>
+                    </div>
+
+                    <!-- Average rating summary -->
+                    <div class="mb-4">
+                        {% if review_count %}
+                            <span class="star-rating fs-5">
+                                {% for i in "12345" %}
+                                    {% if forloop.counter <= avg_rating %}★{% else %}☆{% endif %}
+                                {% endfor %}
+                            </span>
+                            <strong>{{ avg_rating|floatformat:1 }}</strong>
+                            <span class="text-muted">({{ review_count }} review{{ review_count|pluralize }})</span>
+                        {% else %}
+                            <span class="text-muted"><i class="bi bi-star"></i> No reviews yet</span>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Description -->
+                    <h3>About This Skill</h3>
+                    <p class="fs-5">{{ skill.description }}</p>
+                    
+                    <!-- Pricing -->
+                    <hr>
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <h5>Pricing</h5>
+                            {% if skill.price_type == 'free' %}
+                                <h4 class="text-success">FREE</h4>
+                                <p>This skill is offered at no cost</p>
+                            {% elif skill.price_type == 'paid' %}
+                                <h4 class="text-primary">${{ skill.price }} per session</h4>
+                                <p>Negotiable pricing available</p>
+                            {% else %}
+                                <h4 class="text-warning">Negotiable</h4>
+                                <p>Discuss pricing with the instructor</p>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <h5>Availability</h5>
+                            <p>
+                                <strong>Status:</strong> 
+                                {{ skill.get_availability_status_display|title }}
+                            </p>
+                            <p>
+                                <strong>Contact via:</strong> 
+                                {{ skill.get_contact_preference_display }}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Edit/Delete Buttons (for skill owner) -->
+            {% if user.is_authenticated and user == skill.owner %}
+                <div class="mb-4 d-flex flex-wrap gap-2">
+                    <a href="{% url 'MainApp:update_skill' skill.pk %}" class="btn btn-warning">
+                        <i class="bi bi-pencil-square"></i> Edit
+                    </a>
+                    <a href="{% url 'MainApp:delete_skill' skill.pk %}" class="btn btn-danger">
+                        <i class="bi bi-trash"></i> Delete
+                    </a>
+                    <a href="{% url 'MainApp:dashboard' %}" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left"></i> Dashboard
+                    </a>
+                </div>
+            {% endif %}
+
+            <!-- Reviews section -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h3 class="mb-3">
+                        <i class="bi bi-chat-square-text"></i>
+                        Reviews
+                        <span class="text-muted fs-6">({{ review_count }})</span>
+                    </h3>
+
+                    {% if can_review %}
+                        <form method="POST" action="{% url 'MainApp:add_review' skill.pk %}" class="mb-4">
+                            {% csrf_token %}
+                            <div class="row g-2 align-items-start">
+                                <div class="col-md-3">
+                                    <label class="form-label small text-muted mb-1">Your rating</label>
+                                    {{ review_form.rating }}
+                                </div>
+                                <div class="col-md-9">
+                                    <label class="form-label small text-muted mb-1">Comment (optional)</label>
+                                    {{ review_form.comment }}
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-primary mt-3">
+                                <i class="bi bi-send"></i> Post Review
+                            </button>
+                        </form>
+                        <hr>
+                    {% elif user_review %}
+                        <div class="alert alert-light border mb-4">
+                            <i class="bi bi-check-circle text-success"></i>
+                            You've already reviewed this skill.
+                        </div>
+                    {% elif user.is_authenticated and user == skill.owner %}
+                        <p class="text-muted">You can't review your own skill.</p>
+                    {% elif not user.is_authenticated %}
+                        <p class="text-muted">
+                            <a href="{% url 'MainApp:login' %}">Log in</a> to leave a review.
+                        </p>
+                    {% endif %}
+
+                    {% if reviews %}
+                        {% for review in reviews %}
+                            <div class="border-bottom pb-3 mb-3">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <strong>{{ review.author.username }}</strong>
+                                        <span class="star-rating ms-2">
+                                            {% for i in "12345" %}
+                                                {% if forloop.counter <= review.rating %}★{% else %}☆{% endif %}
+                                            {% endfor %}
+                                        </span>
+                                        <small class="text-muted ms-2">{{ review.created_at|date:"M j, Y" }}</small>
+                                    </div>
+                                    {% if user == review.author %}
+                                        <form method="POST" action="{% url 'MainApp:delete_review' review.pk %}" class="d-inline">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-sm btn-link text-danger p-0"
+                                                    onclick="return confirm('Delete your review?');">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </form>
+                                    {% endif %}
+                                </div>
+                                {% if review.comment %}
+                                    <p class="mb-0 mt-2">{{ review.comment }}</p>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted mb-0">Be the first to leave a review.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Instructor Info Sidebar -->
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">Instructor</h5>
+                </div>
+                <div class="card-body text-center">
+                    <!-- Profile Avatar -->
+                    <div class="mb-3">
+                        <div class="avatar-circle">
+                            {{ skill.owner.username|first|upper }}
+                        </div>
+                    </div>
+                    
+                    <!-- Name -->
+                    <h5 class="card-title">{{ skill.owner.get_full_name|default:skill.owner.username }}</h5>
+                    <p class="text-muted">@{{ skill.owner.username }}</p>
+                    
+                    {% if skill.owner.first_name %}
+                        <hr>
+                        <p>
+                            <strong>Name:</strong> {{ skill.owner.first_name }} {{ skill.owner.last_name }}
+                        </p>
+                    {% endif %}
+                    
+                    <hr>
+                    
+                    <!-- Contact Button -->
+                    <div class="d-grid gap-2">
+                        {% if user.is_authenticated and user != skill.owner %}
+                            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#contactModal">
+                                <i class="bi bi-envelope-paper"></i> Contact Instructor
+                            </button>
+                        {% elif not user.is_authenticated %}
+                            <a href="{% url 'MainApp:login' %}" class="btn btn-primary">
+                                Login to Contact
+                            </a>
+                        {% else %}
+                            <p class="text-muted">This is your skill</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Quick Info -->
+            <div class="card mt-3">
+                <div class="card-body">
+                    <h6 class="card-title">Quick Info</h6>
+                    <ul class="list-unstyled">
+                        <li class="mb-2">
+                            <strong>Category:</strong> {{ skill.get_category_display }}
+                        </li>
+                        <li class="mb-2">
+                            <strong>Price Type:</strong> {{ skill.get_price_type_display }}
+                        </li>
+                        <li class="mb-2">
+                            <strong>Contact:</strong> {{ skill.get_contact_preference_display }}
+                        </li>
+                        <li>
+                            <strong>Posted:</strong> {{ skill.created_at|date:"M j, Y" }}
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Contact Modal -->
+<div class="modal fade" id="contactModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Contact {{ skill.owner.username }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>
+                    You can reach out to {{ skill.owner.username }} via:
+                </p>
+                <div class="alert alert-info">
+                    <strong>{{ skill.get_contact_preference_display }}</strong>
+                    <p class="mb-0 mt-2">
+                        Contact method: <strong>{{ skill.get_contact_preference_display }}</strong>
+                    </p>
+                    <p class="mb-0">
+                        Please mention this skill in your message so they know what you're interested in.
+                    </p>
+                </div>
+                
+                <p class="text-muted">
+                    <small>💡 Tip: Be polite and professional when reaching out. Include details about what you're interested in learning.</small>
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

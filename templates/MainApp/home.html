@@ -1,0 +1,133 @@
+{% extends 'MainApp/base.html' %}
+
+{% block title %}Browse Skills - Campus SkillSwap{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="container">
+        <h1>Browse Skills & Services</h1>
+        <p class="lead">Discover amazing skills offered by your classmates</p>
+    </div>
+</div>
+
+<div class="container my-5">
+    <!-- Search + Category Filter (single form so they combine) -->
+    <form method="GET" class="row g-2 mb-4">
+        <div class="col-md-7">
+            <input
+                type="text"
+                name="search"
+                class="form-control"
+                placeholder="Search skills, users, or topics..."
+                value="{{ search_query }}"
+            >
+        </div>
+        <div class="col-md-3">
+            <select name="category" class="form-select">
+                <option value="">All Categories</option>
+                {% for value, label in categories %}
+                    <option value="{{ value }}" {% if value == selected_category %}selected{% endif %}>
+                        {{ label }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-2">
+            <button type="submit" class="btn btn-primary w-100">Search</button>
+        </div>
+    </form>
+    
+    <!-- Skills Grid -->
+    {% if skills %}
+        <div class="row g-4">
+            {% for skill in skills %}
+                <div class="col-md-6 col-lg-4">
+                    <div class="card skill-card h-100">
+                        <div class="card-body">
+                            <!-- Skill Title -->
+                            <h5 class="card-title">{{ skill.title }}</h5>
+                            
+                            <!-- Owner and Category -->
+                            <div class="mb-2">
+                                <small class="text-muted">
+                                    by <strong>{{ skill.owner.username }}</strong>
+                                </small>
+                                <br>
+                                <span class="badge bg-info">{{ skill.get_category_display }}</span>
+                            </div>
+                            
+                            <!-- Description (truncated) -->
+                            <p class="card-text text-muted">
+                                {{ skill.description|truncatewords:15 }}
+                            </p>
+                            
+                            <!-- Price Info -->
+                            <div class="mb-3">
+                                {% if skill.price_type == 'free' %}
+                                    <span class="badge bg-success">Free</span>
+                                {% elif skill.price_type == 'paid' %}
+                                    <span class="badge bg-warning">${{ skill.price }}</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">Negotiable</span>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- Contact Preference -->
+                            <small class="text-muted">
+                                <i class="bi bi-envelope"></i> {{ skill.get_contact_preference_display }}
+                            </small>
+                            
+                            <!-- View Button -->
+                            <div class="mt-3">
+                                <a href="{% url 'MainApp:skill_detail' skill.pk %}" class="btn btn-primary btn-sm w-100">
+                                    View Details
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+        
+        {% if search_query or selected_category %}
+            <div class="text-center mt-4">
+                <p class="text-muted">Found {{ skills.count }} skill{{ skills.count|pluralize }}.</p>
+                <a href="{% url 'MainApp:home' %}" class="btn btn-outline-primary">Clear Filters</a>
+            </div>
+        {% endif %}
+    
+    {% else %}
+        <!-- No Skills Found -->
+        <div class="alert alert-info" role="alert">
+            <h4 class="alert-heading">No skills found</h4>
+            <p>
+                {% if search_query %}
+                    No skills match your search for "{{ search_query }}".
+                {% elif selected_category %}
+                    No skills available in the {{ selected_category|title }} category.
+                {% else %}
+                    No skills are currently available. Be the first to post one!
+                {% endif %}
+            </p>
+            {% if user.is_authenticated %}
+                <a href="{% url 'MainApp:create_skill' %}" class="btn btn-primary">Post a Skill</a>
+            {% else %}
+                <a href="{% url 'MainApp:register' %}" class="btn btn-primary">Sign Up to Post Skills</a>
+            {% endif %}
+        </div>
+    {% endif %}
+    
+    <!-- Call to Action -->
+    {% if user.is_authenticated and skills %}
+        <div class="row mt-5">
+            <div class="col-md-12">
+                <div class="alert alert-light border">
+                    <h5>Want to share your own skills?</h5>
+                    <p>Join the Campus SkillSwap community and earn by sharing what you know!</p>
+                    <a href="{% url 'MainApp:create_skill' %}" class="btn btn-primary">Post Your First Skill</a>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
